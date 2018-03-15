@@ -414,10 +414,9 @@ class SingleThreadedWarcProxy(http_server.HTTPServer, object):
         self.digest_algorithm = options.digest_algorithm or 'sha1'
 
         ca_name = ('Warcprox CA on %s' % socket.gethostname())[:64]
-        self.ca = CertificateAuthority(
-                ca_file=options.cacert or 'warcprox-ca.pem',
-                certs_dir=options.certs_dir or './warcprox-ca',
-                ca_name=ca_name)
+        self.ca = CertificateAuthority(ca_name,
+                                       options.cacert or '/tmp/warcprox-ca.pem',
+                                       {})
 
         self.recorded_url_q = warcprox.TimestampedQueue(
                 maxsize=options.queue_size or 1000)

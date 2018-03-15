@@ -24,7 +24,7 @@ import sys
 import setuptools
 
 deps = [
-    'certauth==1.1.6',
+    'certauth==1.2',
     'warctools',
     'urlcanon>=0.1.dev16',
     'doublethink>=0.2.0.dev87',
