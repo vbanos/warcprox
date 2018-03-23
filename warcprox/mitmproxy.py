@@ -213,11 +213,31 @@ class MitmProxyHandler(http_server.BaseHTTPRequestHandler):
     _max_resource_size = None
     _tmp_file_max_memory_size = 512 * 1024
 
+    # StreamRequestHandler options
+    # Default buffer sizes for rfile, wfile.
+    # We default rfile to buffered because otherwise it could be
+    # really slow for large data (a getc() call per byte); we make
+    # wfile unbuffered because (a) often after a write() we want to
+    # read and we need to flush the line; (b) big writes to unbuffered
+    # files are typically optimized by stdio even when big reads
+    # aren't.
+    #rbufsize = -1
+    rbufsize = 16384
+    #wbufsize = 0
+    wbufsize = 16384
+    # Disable nagle algorithm for this socket, if True.
+    # Use only when wbufsize != 0, to avoid small packets.
+    # disable_nagle_algorithm = False
+    disable_nagle_algorithm = True
+    # TODO it's worth playing with rbufsize and wbufsize in conjunction with SO_SNDBUF and SO_RCVBUF
+
     def __init__(self, request, client_address, server):
         threading.current_thread().name = 'MitmProxyHandler(tid={},started={},client={}:{})'.format(warcprox.gettid(), datetime.datetime.utcnow().isoformat(), client_address[0], client_address[1])
         self.is_connect = False
         self._headers_buffer = []
         request.settimeout(self._socket_timeout)
+        request.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 16384)
+        request.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 16384)
         http_server.BaseHTTPRequestHandler.__init__(self, request, client_address, server)
 
     def _determine_host_port(self):
